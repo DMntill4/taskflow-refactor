@@ -10,9 +10,8 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Diálogo modal para crear o editar una tarea.
- * Incluye campos para título, descripción, prioridad, usuario asignado,
- * proyecto y fecha límite.
+ * Diálogo modal para crear o editar una tarea con estética plana y densa.
+ * Utiliza bordes sutiles de 1px, radio de 6px y tipografía limpia.
  */
 public class TaskDialog extends JDialog {
     private final TaskService taskService;
@@ -29,17 +28,11 @@ public class TaskDialog extends JDialog {
 
     private Task existingTask; // null si es nueva tarea
 
-    /**
-     * Constructor para crear una nueva tarea.
-     */
     public TaskDialog(JFrame parent, TaskService taskService, UserService userService,
                       ProjectService projectService, Runnable onSave) {
         this(parent, taskService, userService, projectService, onSave, null);
     }
 
-    /**
-     * Constructor para editar una tarea existente.
-     */
     public TaskDialog(JFrame parent, TaskService taskService, UserService userService,
                       ProjectService projectService, Runnable onSave, Task existingTask) {
         super(parent, existingTask == null ? "Nueva Tarea" : "Editar Tarea", true);
@@ -52,25 +45,35 @@ public class TaskDialog extends JDialog {
         buildDialog();
         populateFields();
 
-        setSize(480, 520);
+        setSize(460, 530);
         setLocationRelativeTo(parent);
-        getContentPane().setBackground(ThemeManager.BG_SECONDARY);
+        getContentPane().setBackground(ThemeManager.getBgSecondary());
     }
 
     private void buildDialog() {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBackground(ThemeManager.BG_SECONDARY);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 24, 20, 24));
+        mainPanel.setBackground(ThemeManager.getBgSecondary());
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Title
+        // Dialog Title Header
+        JLabel headerLabel = ThemeManager.createLabel(
+            existingTask == null ? "Crear Nueva Tarea" : "Editar Tarea " + ("TSK-" + existingTask.getId().toUpperCase()),
+            ThemeManager.FONT_SECTION_HEADER,
+            ThemeManager.getTextPrimary()
+        );
+        headerLabel.setAlignmentX(LEFT_ALIGNMENT);
+        mainPanel.add(headerLabel);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 16)));
+
+        // Title Field
         mainPanel.add(createFieldPanel("Título *", titleField = new JTextField()));
         ThemeManager.styleTextField(titleField);
 
         mainPanel.add(Box.createRigidArea(new Dimension(0, 12)));
 
-        // Description
-        JLabel descLabel = ThemeManager.createLabel("Descripción", ThemeManager.FONT_BOLD, ThemeManager.TEXT_SECONDARY);
+        // Description Field
+        JLabel descLabel = ThemeManager.createLabel("Descripción", ThemeManager.FONT_MEDIUM, ThemeManager.getTextSecondary());
         descLabel.setAlignmentX(LEFT_ALIGNMENT);
         mainPanel.add(descLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 4)));
@@ -80,19 +83,19 @@ public class TaskDialog extends JDialog {
         JScrollPane scrollPane = new JScrollPane(descriptionArea);
         scrollPane.setBorder(null);
         scrollPane.setAlignmentX(LEFT_ALIGNMENT);
-        scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+        scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 75));
         mainPanel.add(scrollPane);
 
         mainPanel.add(Box.createRigidArea(new Dimension(0, 12)));
 
-        // Priority
+        // Priority Dropdown
         priorityCombo = new JComboBox<>(Priority.values());
         ThemeManager.styleComboBox(priorityCombo);
         mainPanel.add(createComboPanel("Prioridad", priorityCombo));
 
         mainPanel.add(Box.createRigidArea(new Dimension(0, 12)));
 
-        // User assignment
+        // User Assignment Dropdown
         userCombo = new JComboBox<>();
         userCombo.addItem(new UserItem(null, "-- Sin asignar --"));
         List<User> users = userService.getAllUsers();
@@ -104,7 +107,7 @@ public class TaskDialog extends JDialog {
 
         mainPanel.add(Box.createRigidArea(new Dimension(0, 12)));
 
-        // Project
+        // Project Dropdown
         projectCombo = new JComboBox<>();
         projectCombo.addItem(new ProjectItem(null, "-- Sin proyecto --"));
         List<Project> projects = projectService.getAllProjects();
@@ -116,13 +119,13 @@ public class TaskDialog extends JDialog {
 
         mainPanel.add(Box.createRigidArea(new Dimension(0, 12)));
 
-        // Due date
+        // Due Date Field
         mainPanel.add(createFieldPanel("Fecha límite (YYYY-MM-DD)", dueDateField = new JTextField()));
         ThemeManager.styleTextField(dueDateField);
 
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Buttons
+        // Action Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         buttonPanel.setOpaque(false);
         buttonPanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -130,7 +133,7 @@ public class TaskDialog extends JDialog {
         JButton cancelBtn = ThemeManager.createSecondaryButton("Cancelar");
         cancelBtn.addActionListener(e -> dispose());
 
-        JButton saveBtn = ThemeManager.createAccentButton(existingTask == null ? "Crear Tarea" : "Guardar");
+        JButton saveBtn = ThemeManager.createAccentButton(existingTask == null ? "Crear Tarea" : "Guardar Cambios");
         saveBtn.addActionListener(e -> saveTask());
 
         buttonPanel.add(cancelBtn);
@@ -146,13 +149,13 @@ public class TaskDialog extends JDialog {
         panel.setOpaque(false);
         panel.setAlignmentX(LEFT_ALIGNMENT);
 
-        JLabel label = ThemeManager.createLabel(labelText, ThemeManager.FONT_BOLD, ThemeManager.TEXT_SECONDARY);
+        JLabel label = ThemeManager.createLabel(labelText, ThemeManager.FONT_MEDIUM, ThemeManager.getTextSecondary());
         label.setAlignmentX(LEFT_ALIGNMENT);
         panel.add(label);
         panel.add(Box.createRigidArea(new Dimension(0, 4)));
 
         field.setAlignmentX(LEFT_ALIGNMENT);
-        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         panel.add(field);
 
         return panel;
@@ -164,13 +167,13 @@ public class TaskDialog extends JDialog {
         panel.setOpaque(false);
         panel.setAlignmentX(LEFT_ALIGNMENT);
 
-        JLabel label = ThemeManager.createLabel(labelText, ThemeManager.FONT_BOLD, ThemeManager.TEXT_SECONDARY);
+        JLabel label = ThemeManager.createLabel(labelText, ThemeManager.FONT_MEDIUM, ThemeManager.getTextSecondary());
         label.setAlignmentX(LEFT_ALIGNMENT);
         panel.add(label);
         panel.add(Box.createRigidArea(new Dimension(0, 4)));
 
         combo.setAlignmentX(LEFT_ALIGNMENT);
-        combo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        combo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         panel.add(combo);
 
         return panel;
@@ -185,7 +188,6 @@ public class TaskDialog extends JDialog {
                 dueDateField.setText(existingTask.getDueDate());
             }
 
-            // Select user
             if (existingTask.getAssignedUserId() != null) {
                 for (int i = 0; i < userCombo.getItemCount(); i++) {
                     UserItem item = userCombo.getItemAt(i);
@@ -196,7 +198,6 @@ public class TaskDialog extends JDialog {
                 }
             }
 
-            // Select project
             if (existingTask.getProjectId() != null) {
                 for (int i = 0; i < projectCombo.getItemCount(); i++) {
                     ProjectItem item = projectCombo.getItemAt(i);
@@ -225,7 +226,6 @@ public class TaskDialog extends JDialog {
         String dueDate = dueDateField.getText().trim();
 
         if (existingTask == null) {
-            // Crear nueva tarea
             Task task = taskService.createTask(title, description, priority,
                 selectedProject != null ? selectedProject.getId() : null);
             if (selectedUser != null && selectedUser.getId() != null) {
@@ -236,7 +236,6 @@ public class TaskDialog extends JDialog {
                 taskService.updateTask(task);
             }
         } else {
-            // Editar tarea existente
             existingTask.setTitle(title);
             existingTask.setDescription(description);
             existingTask.setPriority(priority);
@@ -249,8 +248,6 @@ public class TaskDialog extends JDialog {
         onSave.run();
         dispose();
     }
-
-    // --- Helper classes for combo items ---
 
     private static class UserItem {
         private final String id;

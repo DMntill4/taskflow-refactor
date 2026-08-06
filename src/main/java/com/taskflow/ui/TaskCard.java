@@ -11,9 +11,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * Componente visual que representa una tarjeta de tarea en el tablero Kanban.
- * Muestra el título, prioridad (con indicador de color), usuario asignado,
- * y botones de acción para cambiar estado o editar.
+ * Tarjeta Kanban densa e inspirada en Linear/GitHub.
+ * Muestra el identificador monoespaciado (ej: TSK-A1B2), título, punto de prioridad,
+ * avatar con iniciales del usuario asignado y botones de acción sutiles.
  */
 public class TaskCard extends JPanel {
     private final Task task;
@@ -29,24 +29,25 @@ public class TaskCard extends JPanel {
         this.onRefresh = onRefresh;
 
         setLayout(new BorderLayout(0, 6));
-        setBackground(ThemeManager.BG_CARD);
-        setBorder(BorderFactory.createEmptyBorder(
-            ThemeManager.PADDING, ThemeManager.PADDING,
-            ThemeManager.PADDING, ThemeManager.PADDING
-        ));
+        setBackground(ThemeManager.getBgCard());
+        setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        setMaximumSize(new Dimension(Integer.MAX_VALUE, 130));
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, 115));
 
         buildCard();
         addHoverEffect();
     }
 
     private void buildCard() {
-        // --- Top: Priority indicator + Title ---
-        JPanel topPanel = new JPanel(new BorderLayout(8, 0));
+        // --- Top Header: Monospace Issue ID + Priority Dot ---
+        JPanel topPanel = new JPanel(new BorderLayout(6, 0));
         topPanel.setOpaque(false);
 
-        // Priority dot
+        // Monospace Task ID (e.g. TSK-A1B2C3D4)
+        String formattedId = "TSK-" + (task.getId() != null ? task.getId().toUpperCase() : "000");
+        JLabel idLabel = ThemeManager.createLabel(formattedId, ThemeManager.FONT_MONO, ThemeManager.getTextSecondary());
+
+        // Small 8px Priority Indicator Dot
         JPanel priorityDot = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -54,95 +55,78 @@ public class TaskCard extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(task.getPriority().getColor());
-                g2.fillOval(2, 2, 10, 10);
+                g2.fillOval(2, 4, 8, 8);
                 g2.dispose();
             }
         };
         priorityDot.setOpaque(false);
-        priorityDot.setPreferredSize(new Dimension(14, 14));
+        priorityDot.setPreferredSize(new Dimension(12, 16));
         priorityDot.setToolTipText("Prioridad: " + task.getPriority().getLabel());
 
-        JLabel titleLabel = ThemeManager.createLabel(task.getTitle(), ThemeManager.FONT_BOLD, ThemeManager.TEXT_PRIMARY);
-        titleLabel.setToolTipText(task.getTitle());
-
-        topPanel.add(priorityDot, BorderLayout.WEST);
-        topPanel.add(titleLabel, BorderLayout.CENTER);
+        topPanel.add(idLabel, BorderLayout.WEST);
+        topPanel.add(priorityDot, BorderLayout.EAST);
 
         add(topPanel, BorderLayout.NORTH);
 
-        // --- Center: Description (truncated) ---
-        if (task.getDescription() != null && !task.getDescription().isEmpty()) {
-            String desc = task.getDescription();
-            if (desc.length() > 60) {
-                desc = desc.substring(0, 57) + "...";
+        // --- Center: Title + Description ---
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.setOpaque(false);
+
+        JLabel titleLabel = ThemeManager.createLabel(task.getTitle(), ThemeManager.FONT_MEDIUM, ThemeManager.getTextPrimary());
+        titleLabel.setAlignmentX(LEFT_ALIGNMENT);
+        centerPanel.add(titleLabel);
+
+        if (task.getDescription() != null && !task.getDescription().trim().isEmpty()) {
+            String desc = task.getDescription().trim();
+            if (desc.length() > 55) {
+                desc = desc.substring(0, 52) + "...";
             }
-            JLabel descLabel = ThemeManager.createLabel(desc, ThemeManager.FONT_SMALL, ThemeManager.TEXT_SECONDARY);
-            add(descLabel, BorderLayout.CENTER);
+            JLabel descLabel = ThemeManager.createLabel(desc, ThemeManager.FONT_SMALL, ThemeManager.getTextMuted());
+            descLabel.setAlignmentX(LEFT_ALIGNMENT);
+            centerPanel.add(Box.createRigidArea(new Dimension(0, 2)));
+            centerPanel.add(descLabel);
         }
 
-        // --- Bottom: User + Priority badge + Actions ---
+        add(centerPanel, BorderLayout.CENTER);
+
+        // --- Bottom: User Avatar + Action Buttons ---
         JPanel bottomPanel = new JPanel(new BorderLayout(4, 0));
         bottomPanel.setOpaque(false);
 
-        // Left: User info + Priority badge
-        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-        infoPanel.setOpaque(false);
+        // User Avatar & Name
+        JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        userPanel.setOpaque(false);
 
-        // Priority badge
-        JLabel priorityBadge = new JLabel(task.getPriority().getLabel()) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(
-                    task.getPriority().getColor().getRed(),
-                    task.getPriority().getColor().getGreen(),
-                    task.getPriority().getColor().getBlue(),
-                    40
-                ));
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 6, 6);
-                super.paintComponent(g);
-                g2.dispose();
-            }
-        };
-        priorityBadge.setFont(ThemeManager.FONT_SMALL);
-        priorityBadge.setForeground(task.getPriority().getColor());
-        priorityBadge.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
-        priorityBadge.setOpaque(false);
-        infoPanel.add(priorityBadge);
-
-        // User badge
         if (task.getAssignedUserId() != null) {
             User user = userService.getUserById(task.getAssignedUserId());
             if (user != null) {
-                JLabel userLabel = new JLabel("👤 " + user.getName());
-                userLabel.setFont(ThemeManager.FONT_SMALL);
-                userLabel.setForeground(ThemeManager.TEXT_MUTED);
-                infoPanel.add(userLabel);
+                userPanel.add(ThemeManager.createAvatar(user.getName(), 22));
+                JLabel userNameLabel = ThemeManager.createLabel(user.getName(), ThemeManager.FONT_SMALL, ThemeManager.getTextSecondary());
+                userPanel.add(userNameLabel);
             }
+        } else {
+            JLabel unassignedLabel = ThemeManager.createLabel("Sin asignar", ThemeManager.FONT_SMALL, ThemeManager.getTextMuted());
+            userPanel.add(unassignedLabel);
         }
 
-        bottomPanel.add(infoPanel, BorderLayout.CENTER);
+        bottomPanel.add(userPanel, BorderLayout.WEST);
 
-        // Right: Action buttons
-        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 0));
+        // Action Buttons
+        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
         actionsPanel.setOpaque(false);
 
-        // Advance status button
-        if (task.getStatus() != task.getStatus().next() || task.getStatus() != com.taskflow.model.TaskStatus.DONE) {
-            JButton advanceBtn = createSmallButton("▶");
-            advanceBtn.setToolTipText("Avanzar a: " + task.getStatus().next().getLabel());
+        if (task.getStatus() != com.taskflow.model.TaskStatus.DONE) {
+            JButton advanceBtn = createGhostButton("▶");
+            advanceBtn.setToolTipText("Mover a: " + task.getStatus().next().getLabel());
             advanceBtn.addActionListener(e -> {
                 taskService.advanceTaskStatus(task.getId());
                 onRefresh.run();
             });
-            if (task.getStatus() != com.taskflow.model.TaskStatus.DONE) {
-                actionsPanel.add(advanceBtn);
-            }
+            actionsPanel.add(advanceBtn);
         }
 
-        // Delete button
-        JButton deleteBtn = createSmallButton("✕");
+        JButton deleteBtn = createGhostButton("✕");
         deleteBtn.setToolTipText("Eliminar tarea");
         deleteBtn.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(
@@ -162,24 +146,23 @@ public class TaskCard extends JPanel {
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    private JButton createSmallButton(String text) {
+    private JButton createGhostButton(String text) {
         JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        btn.setForeground(ThemeManager.TEXT_MUTED);
-        btn.setBackground(ThemeManager.BG_CARD);
-        btn.setBorderPainted(false);
+        btn.setFont(ThemeManager.FONT_SMALL);
+        btn.setForeground(ThemeManager.getTextMuted());
         btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
         btn.setContentAreaFilled(false);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(28, 24));
+        btn.setPreferredSize(new Dimension(24, 20));
         btn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                btn.setForeground(ThemeManager.ACCENT);
+                btn.setForeground(ThemeManager.getAccent());
             }
             @Override
             public void mouseExited(MouseEvent e) {
-                btn.setForeground(ThemeManager.TEXT_MUTED);
+                btn.setForeground(ThemeManager.getTextMuted());
             }
         });
         return btn;
@@ -190,13 +173,13 @@ public class TaskCard extends JPanel {
             @Override
             public void mouseEntered(MouseEvent e) {
                 hovered = true;
-                setBackground(ThemeManager.BG_CARD_HOVER);
+                setBackground(ThemeManager.getBgCardHover());
                 repaint();
             }
             @Override
             public void mouseExited(MouseEvent e) {
                 hovered = false;
-                setBackground(ThemeManager.BG_CARD);
+                setBackground(ThemeManager.getBgCard());
                 repaint();
             }
         });
@@ -206,12 +189,9 @@ public class TaskCard extends JPanel {
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
         g2.setColor(getBackground());
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), ThemeManager.BORDER_RADIUS, ThemeManager.BORDER_RADIUS);
-
-        // Left border with priority color
-        g2.setColor(task.getPriority().getColor());
-        g2.fillRoundRect(0, 0, 4, getHeight(), 4, 4);
 
         g2.dispose();
     }
@@ -220,9 +200,11 @@ public class TaskCard extends JPanel {
     protected void paintBorder(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(hovered ? ThemeManager.ACCENT_SUBTLE : ThemeManager.BORDER_SUBTLE);
-        g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1,
-            ThemeManager.BORDER_RADIUS, ThemeManager.BORDER_RADIUS);
+        
+        // Hairline 1px border. Darkens on hover
+        g2.setColor(hovered ? ThemeManager.getAccent() : ThemeManager.getBorderColor());
+        g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, ThemeManager.BORDER_RADIUS, ThemeManager.BORDER_RADIUS);
+        
         g2.dispose();
     }
 

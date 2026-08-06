@@ -4,12 +4,12 @@ import java.awt.Color;
 
 /**
  * Enum que representa los niveles de prioridad de una tarea.
- * Cada prioridad tiene un label en español y un color asociado para la UI.
+ * Estilo desaturado para herramientas de desarrollo (Linear/Jira/GitHub).
  */
 public enum Priority {
-    HIGH("Alta", new Color(239, 68, 68), new Color(254, 226, 226)),      // Rojo
-    MEDIUM("Media", new Color(245, 158, 11), new Color(254, 243, 199)),  // Amarillo/Naranja
-    LOW("Baja", new Color(34, 197, 94), new Color(220, 252, 231));       // Verde
+    HIGH("Alta", new Color(207, 34, 46), new Color(60, 22, 24)),      // Red #CF222E
+    MEDIUM("Media", new Color(212, 167, 44), new Color(54, 37, 18)),  // Yellow #D4A72C
+    LOW("Baja", new Color(139, 148, 158), new Color(33, 38, 45));     // Gray #8B949E
 
     private final String label;
     private final Color color;
@@ -38,3 +38,4 @@ public enum Priority {
         return label;
     }
 }
+

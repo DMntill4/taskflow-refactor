@@ -4,21 +4,19 @@ import java.awt.Color;
 
 /**
  * Enum que representa los estados posibles de una tarea.
- * Cada estado tiene un label en español y un color asociado.
+ * Estilo de herramientas de desarrollo (Linear/Jira/GitHub) sin emojis.
  */
 public enum TaskStatus {
-    TODO("Por Hacer", new Color(148, 163, 184), "📋"),
-    IN_PROGRESS("En Progreso", new Color(59, 130, 246), "🔄"),
-    DONE("Finalizado", new Color(34, 197, 94), "✅");
+    TODO("Por Hacer", new Color(110, 119, 129)),       // Gray #6E7781
+    IN_PROGRESS("En Progreso", new Color(37, 99, 235)), // Blue #2563EB
+    DONE("Finalizado", new Color(26, 127, 55));         // Green #1A7F37
 
     private final String label;
     private final Color color;
-    private final String icon;
 
-    TaskStatus(String label, Color color, String icon) {
+    TaskStatus(String label, Color color) {
         this.label = label;
         this.color = color;
-        this.icon = icon;
     }
 
     public String getLabel() {
@@ -27,10 +25,6 @@ public enum TaskStatus {
 
     public Color getColor() {
         return color;
-    }
-
-    public String getIcon() {
-        return icon;
     }
 
     /**
@@ -50,3 +44,4 @@ public enum TaskStatus {
         return label;
     }
 }
+

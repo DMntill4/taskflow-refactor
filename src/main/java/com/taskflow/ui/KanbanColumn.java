@@ -10,9 +10,8 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Columna del tablero Kanban que muestra las tareas de un estado específico.
- * Cada columna tiene un header con el nombre del estado, un contador de tareas,
- * y un área scrollable con las tarjetas de tarea.
+ * Columna Kanban densa y limpia estilo Linear/GitHub.
+ * Muestra el estado, el contador de tareas en un badge monoespaciado y las tarjetas alineadas.
  */
 public class KanbanColumn extends JPanel {
     private final TaskStatus status;
@@ -20,7 +19,7 @@ public class KanbanColumn extends JPanel {
     private final UserService userService;
     private final Runnable onRefresh;
     private JPanel cardsContainer;
-    private JLabel countLabel;
+    private JLabel countBadge;
 
     public KanbanColumn(TaskStatus status, TaskService taskService, UserService userService, Runnable onRefresh) {
         this.status = status;
@@ -29,26 +28,25 @@ public class KanbanColumn extends JPanel {
         this.onRefresh = onRefresh;
 
         setLayout(new BorderLayout(0, 8));
-        setBackground(ThemeManager.BG_COLUMN);
-        setBorder(BorderFactory.createEmptyBorder(
-            ThemeManager.PADDING, ThemeManager.PADDING,
-            ThemeManager.PADDING, ThemeManager.PADDING
-        ));
+        setBackground(ThemeManager.getBgSecondary());
+        setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
         buildColumn();
     }
 
     private void buildColumn() {
-        // --- Header ---
+        // --- Header: Status title + Counter Badge ---
         JPanel headerPanel = new JPanel(new BorderLayout(8, 0));
         headerPanel.setOpaque(false);
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 8, 0));
+        headerPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 1, 0, ThemeManager.getBorderColor()),
+            BorderFactory.createEmptyBorder(0, 0, 8, 0)
+        ));
 
-        // Status indicator + title
+        // Left: Status dot + Title
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         titlePanel.setOpaque(false);
 
-        // Status color dot
         JPanel statusDot = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -56,48 +54,46 @@ public class KanbanColumn extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(status.getColor());
-                g2.fillOval(0, 2, 12, 12);
+                g2.fillOval(0, 4, 8, 8);
                 g2.dispose();
             }
         };
         statusDot.setOpaque(false);
-        statusDot.setPreferredSize(new Dimension(12, 16));
+        statusDot.setPreferredSize(new Dimension(10, 16));
 
         JLabel titleLabel = ThemeManager.createLabel(
-            status.getIcon() + " " + status.getLabel(),
-            ThemeManager.FONT_COLUMN_HEADER,
-            ThemeManager.TEXT_PRIMARY
+            status.getLabel().toUpperCase(),
+            ThemeManager.FONT_SECTION_HEADER,
+            ThemeManager.getTextPrimary()
         );
-
-        countLabel = new JLabel("0");
-        countLabel.setFont(ThemeManager.FONT_SMALL);
-        countLabel.setForeground(ThemeManager.TEXT_MUTED);
-        countLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
 
         titlePanel.add(statusDot);
         titlePanel.add(titleLabel);
-        titlePanel.add(countLabel);
 
-        headerPanel.add(titlePanel, BorderLayout.CENTER);
+        // Right: Counter Badge (Monospace)
+        countBadge = ThemeManager.createBadge("0", ThemeManager.getTextSecondary(), ThemeManager.getBgCardHover());
+        countBadge.setFont(ThemeManager.FONT_MONO_BOLD);
+
+        headerPanel.add(titlePanel, BorderLayout.WEST);
+        headerPanel.add(countBadge, BorderLayout.EAST);
 
         add(headerPanel, BorderLayout.NORTH);
 
         // --- Cards container with scroll ---
         cardsContainer = new JPanel();
         cardsContainer.setLayout(new BoxLayout(cardsContainer, BoxLayout.Y_AXIS));
-        cardsContainer.setBackground(ThemeManager.BG_COLUMN);
+        cardsContainer.setBackground(ThemeManager.getBgSecondary());
 
         JScrollPane scrollPane = new JScrollPane(cardsContainer);
-        scrollPane.setBackground(ThemeManager.BG_COLUMN);
-        scrollPane.getViewport().setBackground(ThemeManager.BG_COLUMN);
+        scrollPane.setBackground(ThemeManager.getBgSecondary());
+        scrollPane.getViewport().setBackground(ThemeManager.getBgSecondary());
         scrollPane.setBorder(null);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-        // Style the scrollbar
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(6, 0));
-        scrollPane.getVerticalScrollBar().setBackground(ThemeManager.BG_COLUMN);
+        scrollPane.getVerticalScrollBar().setBackground(ThemeManager.getBgSecondary());
 
         add(scrollPane, BorderLayout.CENTER);
     }
@@ -112,7 +108,7 @@ public class KanbanColumn extends JPanel {
                 .filter(t -> t.getStatus() == status)
                 .collect(java.util.stream.Collectors.toList());
 
-        countLabel.setText(String.valueOf(filteredTasks.size()));
+        countBadge.setText(String.valueOf(filteredTasks.size()));
 
         for (Task task : filteredTasks) {
             TaskCard card = new TaskCard(task, taskService, userService, onRefresh);
@@ -120,15 +116,15 @@ public class KanbanColumn extends JPanel {
             cardsContainer.add(Box.createRigidArea(new Dimension(0, ThemeManager.GAP)));
         }
 
-        // Add empty state if no tasks
+        // Empty state: Minimalist, no heavy illustration
         if (filteredTasks.isEmpty()) {
             JPanel emptyPanel = new JPanel();
             emptyPanel.setOpaque(false);
             emptyPanel.setLayout(new BoxLayout(emptyPanel, BoxLayout.Y_AXIS));
-            emptyPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+            emptyPanel.setBorder(BorderFactory.createEmptyBorder(24, 0, 24, 0));
 
             JLabel emptyLabel = ThemeManager.createLabel(
-                "Sin tareas", ThemeManager.FONT_SMALL, ThemeManager.TEXT_MUTED
+                "No hay tareas en esta columna", ThemeManager.FONT_SMALL, ThemeManager.getTextMuted()
             );
             emptyLabel.setAlignmentX(CENTER_ALIGNMENT);
             emptyPanel.add(emptyLabel);
@@ -145,6 +141,15 @@ public class KanbanColumn extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setColor(getBackground());
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), ThemeManager.BORDER_RADIUS, ThemeManager.BORDER_RADIUS);
+        g2.dispose();
+    }
+
+    @Override
+    protected void paintBorder(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(ThemeManager.getBorderColor());
+        g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, ThemeManager.BORDER_RADIUS, ThemeManager.BORDER_RADIUS);
         g2.dispose();
     }
 

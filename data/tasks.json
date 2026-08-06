@@ -1,39 +1,26 @@
 [
   {
-    "id": "7833eca3",
-    "title": "Diseñar esquema JSON",
-    "description": "Definir cómo se guardarán las tareas, usuarios y proyectos en los archivos JSON.",
-    "priority": "HIGH",
-    "status": "DONE",
-    "assignedUserId": "b72f53a9",
-    "projectId": "3d226859",
-    "createdAt": "2026-08-06 08:03"
-  },
-  {
-    "id": "0a23c8f1",
-    "title": "Implementar UI Kanban",
-    "description": "Crear las 3 columnas y las tarjetas drag \u0026 drop.",
+    "id": "83f807f1",
+    "title": "Diseñar Interfaz Swing",
+    "description": "Crear componentes de interfaz clara y legible en Java.",
     "priority": "HIGH",
     "status": "IN_PROGRESS",
-    "assignedUserId": "78de1d6f",
-    "projectId": "13102202",
-    "createdAt": "2026-08-06 08:03"
+    "assignedUserId": "36ba47b1"
   },
   {
-    "id": "63279eea",
-    "title": "Presentación del Lunes",
-    "description": "Preparar diapositivas y demo para la presentación del proyecto.",
+    "id": "044217af",
+    "title": "Crear Estructura JSON",
+    "description": "Definir formato de guardado de tareas en archivos locales.",
     "priority": "MEDIUM",
-    "status": "TODO",
-    "createdAt": "2026-08-06 08:03"
+    "status": "DONE",
+    "assignedUserId": "b5dadc97"
   },
   {
-    "id": "48b24296",
-    "title": "Ajustar colores del tema oscuro",
-    "description": "El contraste en los botones no es suficiente.",
-    "priority": "LOW",
+    "id": "d804dc24",
+    "title": "Preparar Presentación",
+    "description": "Revisar el código y flujo para la exposición del lunes.",
+    "priority": "HIGH",
     "status": "TODO",
-    "projectId": "13102202",
-    "createdAt": "2026-08-06 08:03"
+    "assignedUserId": "36ba47b1"
   }
 ]

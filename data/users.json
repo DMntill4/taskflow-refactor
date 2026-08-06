@@ -1,12 +1,10 @@
 [
   {
-    "id": "b72f53a9",
-    "name": "Alice (Dev)",
-    "email": "alice@taskflow.com"
+    "id": "36ba47b1",
+    "name": "Diego"
   },
   {
-    "id": "78de1d6f",
-    "name": "Bob (QA)",
-    "email": "bob@taskflow.com"
+    "id": "b5dadc97",
+    "name": "Guerra"
   }
 ]

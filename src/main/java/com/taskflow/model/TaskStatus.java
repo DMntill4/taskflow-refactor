@@ -3,13 +3,12 @@ package com.taskflow.model;
 import java.awt.Color;
 
 /**
- * Enum que representa los estados posibles de una tarea.
- * Estilo de herramientas de desarrollo (Linear/Jira/GitHub) sin emojis.
+ * Enum simple para los estados de una tarea.
  */
 public enum TaskStatus {
-    TODO("Por Hacer", new Color(110, 119, 129)),       // Gray #6E7781
-    IN_PROGRESS("En Progreso", new Color(37, 99, 235)), // Blue #2563EB
-    DONE("Finalizado", new Color(26, 127, 55));         // Green #1A7F37
+    TODO("Por Hacer", new Color(107, 114, 128)),
+    IN_PROGRESS("En Proceso", new Color(37, 99, 235)),
+    DONE("Finalizado", new Color(16, 185, 129));
 
     private final String label;
     private final Color color;
@@ -27,15 +26,13 @@ public enum TaskStatus {
         return color;
     }
 
-    /**
-     * Retorna el siguiente estado en el flujo de trabajo.
-     * TODO -> IN_PROGRESS -> DONE -> DONE
-     */
     public TaskStatus next() {
-        switch (this) {
-            case TODO: return IN_PROGRESS;
-            case IN_PROGRESS: return DONE;
-            default: return DONE;
+        if (this == TODO) {
+            return IN_PROGRESS;
+        } else if (this == IN_PROGRESS) {
+            return DONE;
+        } else {
+            return DONE;
         }
     }
 
@@ -44,4 +41,3 @@ public enum TaskStatus {
         return label;
     }
 }
-

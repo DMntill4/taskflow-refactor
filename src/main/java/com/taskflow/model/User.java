@@ -3,29 +3,18 @@ package com.taskflow.model;
 import java.util.UUID;
 
 /**
- * Entidad que representa un usuario del sistema.
- * Un usuario puede tener tareas asignadas.
+ * Clase modelo para representar a un Usuario.
  */
 public class User {
     private String id;
     private String name;
-    private String email;
 
-    /**
-     * Constructor para crear un nuevo usuario.
-     */
-    public User(String name, String email) {
+    public User(String name) {
         this.id = UUID.randomUUID().toString().substring(0, 8);
         this.name = name;
-        this.email = email;
     }
 
-    /**
-     * Constructor vacío para deserialización JSON.
-     */
     public User() {}
-
-    // --- Getters y Setters ---
 
     public String getId() {
         return id;
@@ -43,23 +32,8 @@ public class User {
         this.name = name;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     @Override
     public String toString() {
         return name;
-    }
-
-    /**
-     * Representación detallada del usuario.
-     */
-    public String toDetailString() {
-        return String.format("%s (%s)", name, email);
     }
 }

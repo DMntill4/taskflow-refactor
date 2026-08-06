@@ -1,131 +1,75 @@
 # TaskFlow - Gestor de Tareas
 
-[![Java Version](https://img.shields.io/badge/Java-17%2B-orange.svg?style=flat-square)](#)
-[![JSON Persistence](https://img.shields.io/badge/Persistence-JSON-blue.svg?style=flat-square)](#)
-[![UI Framework](https://img.shields.io/badge/UI-Swing-green.svg?style=flat-square)](#)
-
-> TaskFlow es una plataforma de productividad y organización de tareas inspirada en metodologías ágiles. La aplicación implementa un flujo de trabajo Kanban clásico combinado con la potencia de una interfaz gráfica de usuario desarrollada en Java Swing y una persistencia local estructurada mediante archivos JSON.
+TaskFlow es una aplicación de gestión de tareas inspirada en plataformas como Jira y Trello, desarrollada en Java con una interfaz gráfica Swing de alto contraste y persistencia en archivos JSON.
 
 ---
 
-## Stack Tecnológico
+## Estructura Simplificada del Proyecto
 
-El proyecto ha sido construido utilizando tecnologías nativas de la plataforma Java y librerías estándares para garantizar la portabilidad y ligereza del sistema:
+El código está estructurado de manera directa y accesible para nivel Junior:
 
-| Componente | Tecnología | Propósito |
-| :--- | :--- | :--- |
-| **Lenguaje de Programación** | Java 17 (JDK) | Garantiza el uso de características modernas y seguras del lenguaje. |
-| **Interfaz de Usuario** | Java Swing / AWT | Renderizado de componentes gráficos nativos y manejo de eventos. |
-| **Persistencia** | Gson (Google) 2.10+ | Serialización y deserialización de objetos Java a archivos estructurados en JSON. |
-| **Gestión de Diseño** | Layout Managers avanzados | Distribución fluida y responsiva de las tarjetas en el tablero. |
-
----
-
-## Arquitectura del Software
-
-TaskFlow adopta un patrón de diseño arquitectónico estructurado por capas para separar la lógica de presentación visual, las reglas de negocio y el almacenamiento persistente de datos.
-
-```mermaid
-graph TD
-    UI[Capa de Presentación: Swing UI] --> Service[Capa de Servicios: Lógica de Negocio]
-    Service --> Repository[Capa de Persistencia: JsonRepository]
-    Repository --> JSON[(Archivos JSON)]
-    Service -.-> Model[Capa de Modelos: Entidades]
-    Repository -.-> Model
-    UI -.-> Model
+```text
+src/main/java/com/taskflow/
+├── Main.java              # Punto de entrada principal (inicio de la GUI)
+├── TaskManager.java       # Gestor único de datos, listas y guardado en JSON
+├── model/                 # Entidades y enumeraciones del dominio
+│   ├── Task.java          # Modelo de la Tarea (título, descripción, prioridad, estado)
+│   ├── User.java          # Modelo del Usuario (id, nombre)
+│   ├── Priority.java      # Enums de Prioridad (Alta, Media, Baja)
+│   └── TaskStatus.java    # Enums de Estado (Por Hacer, En Proceso, Finalizado)
+└── ui/                    # Interfaz gráfica Swing
+    └── MainFrame.java     # Ventana principal con pestañas (Kanban y Vista por Usuario)
 ```
-
-### Capas del Sistema
-
-- **Modelos (`com.taskflow.model`):** Contiene las entidades principales como `Task`, `User`, `Project`, y los enums que definen el estado de las tareas (`TaskStatus`) y la prioridad (`Priority`).
-- **Servicios (`com.taskflow.service`):** Lógica encargada de coordinar las acciones de las tareas, la asignación a usuarios y la validación de dependencias del negocio.
-- **Repositorio (`com.taskflow.repository`):** Maneja la persistencia en disco de manera transparente utilizando archivos estructurados en formato JSON.
-- **Interfaz (`com.taskflow.ui`):** Componentes gráficos interactivos que incluyen diálogos modales para la edición de tareas, tarjetas Kanban personalizadas y un panel de visualización consolidado por usuario.
 
 ---
 
 ## Características Principales
 
-### Tablero Kanban Interactivo
-El tablero central organiza el flujo de trabajo en tres columnas claramente definidas:
-- **Por Hacer (To Do):** Tareas pendientes por iniciar.
-- **En Progreso (In Progress):** Tareas que se están ejecutando activamente.
-- **Finalizado (Done):** Tareas concluidas con éxito.
-
-### Gestión de Prioridades y Proyectos
-- Clasificación visual de prioridad: Alta, Media y Baja para optimizar la toma de decisiones.
-- Agrupación por Proyectos: Facilidad para segmentar tareas complejas en microproyectos independientes.
-
-### Dashboard Personalizado de Usuario
-Permite a cada miembro del equipo acceder a una vista centralizada de sus tareas asignadas, organizadas jerárquicamente por prioridad para enfocar el esfuerzo diario de manera eficiente.
-
----
-
-## Estructura del Código Fuente
-
-```text
-src/main/java/com/taskflow/
-├── Main.java              # Clase de inicio y punto de entrada al sistema
-├── model/                 # Entidades y enumeraciones del negocio
-│   ├── Priority.java      # Definición de niveles de prioridad
-│   ├── TaskStatus.java    # Estados del flujo Kanban
-│   ├── Task.java          # Datos estructurales de una tarea
-│   ├── User.java          # Información de usuarios registrados
-│   └── Project.java       # Agrupación lógica de tareas
-├── service/               # Servicios mediadores de negocio
-│   ├── TaskService.java
-│   ├── UserService.java
-│   └── ProjectService.java
-├── repository/            # Acceso a datos locales
-│   └── JsonRepository.java # Operaciones de lectura y escritura en JSON
-└── ui/                    # Componentes gráficos de la interfaz
-    ├── MainFrame.java     # Ventana principal del tablero
-    ├── TaskCard.java      # Componente visual para cada tarea individual
-    ├── KanbanColumn.java  # Columna contenedora del tablero Kanban
-    ├── TaskDialog.java    # Formulario para creación y edición
-    ├── UserPanel.java     # Panel lateral con tareas del usuario activo
-    └── ThemeManager.java  # Control centralizado de colores e identidad visual
-```
+1. **Tablero Kanban Visual**:
+   - Organizado en tres columnas: **Por Hacer**, **En Proceso** y **Finalizado**.
+   - Avance rápido de estado mediante el botón `▶ Mover`.
+2. **Prioridades con Código de Colores de Alto Contraste**:
+   - Rojo: Prioridad Alta.
+   - Naranja/Amarillo: Prioridad Media.
+   - Gris: Prioridad Baja.
+3. **Asignación de Tareas y Vista por Usuario**:
+   - Asignación de tareas a usuarios del equipo.
+   - Pestaña para filtrar tareas por usuario agrupadas ordenadamente por prioridad.
+4. **Diálogos Interactivos con `JOptionPane`**:
+   - Creación rápida de usuarios y tareas mediante diálogos estándar de Swing.
+5. **Persistencia de Datos en JSON**:
+   - Los datos se guardan automáticamente en la carpeta `data/` usando la librería Gson.
 
 ---
 
 ## Compilación y Ejecución
 
-Para iniciar la aplicación localmente, asegúrese de tener instalado el JDK 17 o superior y siga las siguientes instrucciones en su terminal:
+Para compilar y ejecutar desde la terminal o mediante los archivos `.bat`:
 
 ```bash
-# Paso 1: Compilar los archivos fuente dirigiendo los binarios al directorio de salida
-javac -cp "lib/*" -d out src/main/java/com/taskflow/**/*.java src/main/java/com/taskflow/*.java
+# Compilar el proyecto
+javac -cp "lib/*" -d out src/main/java/com/taskflow/model/*.java src/main/java/com/taskflow/ui/*.java src/main/java/com/taskflow/*.java
 
-# Paso 2: Ejecutar la aplicación enlazando la carpeta de salida y las librerías necesarias
+# Ejecutar la aplicación
 java -cp "out;lib/*" com.taskflow.Main
 ```
 
 ---
 
-## Convención de Commits
+## Guía de Explicación para la Exposición del Lunes
 
-El desarrollo sigue el estándar de Conventional Commits para mantener un historial de cambios limpio y legible:
+Para defender el proyecto ante tu profesor o evaluadores:
 
-| Prefijo | Propósito del Commit |
-| :--- | :--- |
-| `feat` | Implementación de una nueva característica o funcionalidad. |
-| `fix` | Corrección de un fallo o error en el sistema. |
-| `docs` | Actualización de documentación (código, manuales, README). |
-| `style` | Cambios que no afectan la lógica (espacios, formateo, interfaz visual). |
-| `refactor` | Reorganización de código sin alterar su comportamiento externo. |
-| `test` | Incorporación o corrección de pruebas automatizadas. |
+1. **`Main.java`**:
+   - *"Es la clase de inicio. Crea una instancia de `TaskManager` que carga los datos en JSON y abre la ventana `MainFrame`."*
+2. **`TaskManager.java`**:
+   - *"Es el gestor central. Administra las listas de tareas y usuarios en memoria, realiza las búsquedas mediante bucles `for` y guarda todo en archivos JSON usando Gson."*
+3. **`MainFrame.java`**:
+   - *"Es la interfaz gráfica en Swing. Utiliza un `JTabbedPane` para separar el tablero Kanban de la vista por usuarios, y `JOptionPane` para pedir los datos al crear tareas o usuarios."*
 
 ---
 
 ## Autores
 
-Proyecto desarrollado por:
 - **Andrés Guerra**
 - **Diego Mantilla**
-
----
-
-## Licencia
-
-Este proyecto se distribuye bajo fines puramente académicos y educativos. Todos los derechos reservados.

@@ -297,19 +297,21 @@ public class MainFrame extends JFrame {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
         actions.setOpaque(false);
 
-        if (task.getStatus() != TaskStatus.DONE) {
-            JButton btnAvanzar = new JButton("▶ Mover");
-            btnAvanzar.setFont(new Font("Segoe UI", Font.BOLD, 11));
-            btnAvanzar.setBackground(BTN_BLUE);
-            btnAvanzar.setForeground(TEXT_WHITE);
-            btnAvanzar.setFocusPainted(false);
-            btnAvanzar.setMargin(new Insets(2, 6, 2, 6));
-            btnAvanzar.addActionListener(e -> {
-                taskManager.avanzarEstadoTarea(task.getId());
+        JComboBox<TaskStatus> comboEstado = new JComboBox<>(TaskStatus.values());
+        comboEstado.setSelectedItem(task.getStatus());
+        comboEstado.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        comboEstado.setBackground(BG_CARD);
+        comboEstado.setForeground(task.getStatus().getColor());
+        comboEstado.setFocusable(false);
+        comboEstado.setToolTipText("Mover tarea a otro estado");
+        comboEstado.addActionListener(e -> {
+            TaskStatus nuevoEstado = (TaskStatus) comboEstado.getSelectedItem();
+            if (nuevoEstado != null && nuevoEstado != task.getStatus()) {
+                taskManager.cambiarEstadoTarea(task.getId(), nuevoEstado);
                 actualizarTodo();
-            });
-            actions.add(btnAvanzar);
-        }
+            }
+        });
+        actions.add(comboEstado);
 
         JButton btnEliminar = new JButton("✕");
         btnEliminar.setFont(new Font("Segoe UI", Font.BOLD, 11));
@@ -394,12 +396,33 @@ public class MainFrame extends JFrame {
                         left.add(idLabel);
                         left.add(titleLabel);
 
-                        JLabel statusLabel = new JLabel("Estado: " + t.getStatus().getLabel());
-                        statusLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-                        statusLabel.setForeground(t.getStatus().getColor());
+                        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+                        right.setOpaque(false);
+
+                        JLabel labelEstado = new JLabel("Estado:");
+                        labelEstado.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                        labelEstado.setForeground(TEXT_MUTED);
+                        right.add(labelEstado);
+
+                        JComboBox<TaskStatus> comboStatusUser = new JComboBox<>(TaskStatus.values());
+                        comboStatusUser.setSelectedItem(t.getStatus());
+                        comboStatusUser.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                        comboStatusUser.setBackground(BG_CARD);
+                        comboStatusUser.setForeground(t.getStatus().getColor());
+                        comboStatusUser.setFocusable(false);
+
+                        final Task currentTask = t;
+                        comboStatusUser.addActionListener(e -> {
+                            TaskStatus nuevoEstado = (TaskStatus) comboStatusUser.getSelectedItem();
+                            if (nuevoEstado != null && nuevoEstado != currentTask.getStatus()) {
+                                taskManager.cambiarEstadoTarea(currentTask.getId(), nuevoEstado);
+                                actualizarTodo();
+                            }
+                        });
+                        right.add(comboStatusUser);
 
                         fila.add(left, BorderLayout.WEST);
-                        fila.add(statusLabel, BorderLayout.EAST);
+                        fila.add(right, BorderLayout.EAST);
 
                         grupo.add(fila);
                         grupo.add(Box.createRigidArea(new Dimension(0, 4)));

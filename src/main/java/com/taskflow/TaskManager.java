@@ -186,6 +186,17 @@ public class TaskManager {
         guardarDatos();
     }
 
+    public void cambiarEstadoTarea(String tareaId, TaskStatus nuevoEstado) {
+        if (nuevoEstado == null) return;
+        for (Task t : tareas) {
+            if (t.getId().equals(tareaId)) {
+                t.setStatus(nuevoEstado);
+                break;
+            }
+        }
+        guardarDatos();
+    }
+
     public void eliminarTarea(String tareaId) {
         for (int i = 0; i < tareas.size(); i++) {
             if (tareas.get(i).getId().equals(tareaId)) {

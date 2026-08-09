@@ -1,26 +1,10 @@
 [
   {
-    "id": "83f807f1",
-    "title": "Diseñar Interfaz Swing",
-    "description": "Crear componentes de interfaz clara y legible en Java.",
-    "priority": "HIGH",
-    "status": "IN_PROGRESS",
-    "assignedUserId": "36ba47b1"
-  },
-  {
-    "id": "044217af",
-    "title": "Crear Estructura JSON",
-    "description": "Definir formato de guardado de tareas en archivos locales.",
-    "priority": "MEDIUM",
+    "id": "4eaab93c",
+    "title": "d",
+    "description": "d",
+    "priority": "LOW",
     "status": "DONE",
-    "assignedUserId": "b5dadc97"
-  },
-  {
-    "id": "d804dc24",
-    "title": "Preparar Presentación",
-    "description": "Revisar el código y flujo para la exposición del lunes.",
-    "priority": "HIGH",
-    "status": "TODO",
     "assignedUserId": "36ba47b1"
   }
 ]

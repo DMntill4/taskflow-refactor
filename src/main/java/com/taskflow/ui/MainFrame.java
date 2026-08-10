@@ -28,6 +28,13 @@ public class MainFrame extends JFrame {
     private JPanel inProgressColumn;
     private JPanel doneColumn;
 
+    // Filtro por Prioridad (Botones rápidos)
+    private Priority filtroPrioridadActual = null; // null = Todas
+    private JButton btnFiltroTodas;
+    private JButton btnFiltroAlta;
+    private JButton btnFiltroMedia;
+    private JButton btnFiltroBaja;
+
     // Paleta de Colores de Alto Contraste (Claro + Encabezado Oscuro Elegante)
     private static final Color BG_MAIN = new Color(243, 244, 246);       // Fondo principal claro #F3F4F6
     private static final Color BG_HEADER = new Color(31, 41, 55);        // Encabezado oscuro slate #1F2937
@@ -48,7 +55,7 @@ public class MainFrame extends JFrame {
 
         setTitle("TaskFlow — Gestor de Tareas");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1050, 720);
+        setSize(1080, 720);
         setLocationRelativeTo(null);
         getContentPane().setBackground(BG_MAIN);
         setLayout(new BorderLayout());
@@ -64,13 +71,34 @@ public class MainFrame extends JFrame {
         headerPanel.setBackground(BG_HEADER);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(12, 18, 12, 18));
 
-        // Título del Sistema
-        JLabel titleLabel = new JLabel("TaskFlow - Gestor de Tareas");
+        // Subpanel Izquierdo (Título + Botones de Filtro por Prioridad)
+        JPanel leftHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        leftHeader.setOpaque(false);
+
+        JLabel titleLabel = new JLabel("TaskFlow");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
         titleLabel.setForeground(TEXT_WHITE);
-        headerPanel.add(titleLabel, BorderLayout.WEST);
+        leftHeader.add(titleLabel);
 
-        // Botones de Acción Principales
+        JLabel filterLabel = new JLabel("Prioridad:");
+        filterLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        filterLabel.setForeground(new Color(209, 213, 219));
+        leftHeader.add(filterLabel);
+
+        btnFiltroTodas = crearBotonFiltro("Todas", null);
+        btnFiltroAlta = crearBotonFiltro("Alta", Priority.HIGH);
+        btnFiltroMedia = crearBotonFiltro("Media", Priority.MEDIUM);
+        btnFiltroBaja = crearBotonFiltro("Baja", Priority.LOW);
+
+        leftHeader.add(btnFiltroTodas);
+        leftHeader.add(btnFiltroAlta);
+        leftHeader.add(btnFiltroMedia);
+        leftHeader.add(btnFiltroBaja);
+
+        actualizarEstilosBotonesFiltro();
+        headerPanel.add(leftHeader, BorderLayout.WEST);
+
+        // Botones de Acción Principales (Derecha)
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         buttonsPanel.setOpaque(false);
 
@@ -214,14 +242,22 @@ public class MainFrame extends JFrame {
         container.removeAll();
 
         List<Task> tareasEstado = taskManager.obtenerTareasPorEstado(estado);
+        int tareasMostradas = 0;
 
         for (Task t : tareasEstado) {
+            if (filtroPrioridadActual != null && t.getPriority() != filtroPrioridadActual) {
+                continue;
+            }
             container.add(crearTarjetaTareaPanel(t));
             container.add(Box.createRigidArea(new Dimension(0, 8)));
+            tareasMostradas++;
         }
 
-        if (tareasEstado.isEmpty()) {
-            JLabel emptyLabel = new JLabel("Sin tareas", SwingConstants.CENTER);
+        if (tareasMostradas == 0) {
+            String textoVacio = filtroPrioridadActual != null
+                ? "Sin tareas " + filtroPrioridadActual.getLabel().toLowerCase()
+                : "Sin tareas";
+            JLabel emptyLabel = new JLabel(textoVacio, SwingConstants.CENTER);
             emptyLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
             emptyLabel.setForeground(TEXT_MUTED);
             emptyLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -357,10 +393,15 @@ public class MainFrame extends JFrame {
             labelInfo.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
             userTasksContainer.add(labelInfo);
         } else {
+            int gruposMostrados = 0;
             for (Priority priority : Priority.values()) {
+                if (filtroPrioridadActual != null && priority != filtroPrioridadActual) {
+                    continue;
+                }
                 List<Task> tareasPrioridad = taskManager.obtenerTareasPorUsuarioYPrioridad(selectedUser.getId(), priority);
 
                 if (!tareasPrioridad.isEmpty()) {
+                    gruposMostrados++;
                     JPanel grupo = new JPanel();
                     grupo.setLayout(new BoxLayout(grupo, BoxLayout.Y_AXIS));
                     grupo.setOpaque(false);
@@ -432,6 +473,17 @@ public class MainFrame extends JFrame {
                     userTasksContainer.add(Box.createRigidArea(new Dimension(0, 14)));
                 }
             }
+
+            if (gruposMostrados == 0) {
+                String msg = filtroPrioridadActual != null
+                    ? "El usuario \"" + selectedUser.getName() + "\" no tiene tareas asignadas con prioridad " + filtroPrioridadActual.getLabel() + "."
+                    : "El usuario \"" + selectedUser.getName() + "\" no tiene tareas asignadas.";
+                JLabel labelEmptyUser = new JLabel(msg);
+                labelEmptyUser.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+                labelEmptyUser.setForeground(TEXT_MUTED);
+                labelEmptyUser.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
+                userTasksContainer.add(labelEmptyUser);
+            }
         }
 
         userTasksContainer.revalidate();
@@ -479,6 +531,45 @@ public class MainFrame extends JFrame {
         JOptionPane.showMessageDialog(this, "Tarea creada exitosamente.");
     }
 
+    private JButton crearBotonFiltro(String texto, Priority priority) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btn.setFocusPainted(false);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.addActionListener(e -> {
+            filtroPrioridadActual = priority;
+            actualizarEstilosBotonesFiltro();
+            actualizarTodo();
+        });
+        return btn;
+    }
+
+    private void actualizarEstilosBotonesFiltro() {
+        aplicarEstiloFiltro(btnFiltroTodas, filtroPrioridadActual == null, BG_HEADER, TEXT_WHITE);
+        aplicarEstiloFiltro(btnFiltroAlta, filtroPrioridadActual == Priority.HIGH, Priority.HIGH.getColor(), TEXT_WHITE);
+        aplicarEstiloFiltro(btnFiltroMedia, filtroPrioridadActual == Priority.MEDIUM, Priority.MEDIUM.getColor(), TEXT_WHITE);
+        aplicarEstiloFiltro(btnFiltroBaja, filtroPrioridadActual == Priority.LOW, Priority.LOW.getColor(), TEXT_WHITE);
+    }
+
+    private void aplicarEstiloFiltro(JButton btn, boolean seleccionado, Color colorBase, Color colorTexto) {
+        if (btn == null) return;
+        if (seleccionado) {
+            btn.setBackground(colorBase);
+            btn.setForeground(colorTexto);
+            btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(TEXT_WHITE, 2),
+                BorderFactory.createEmptyBorder(3, 10, 3, 10)
+            ));
+        } else {
+            btn.setBackground(new Color(55, 65, 81)); // Slate oscuro #374151
+            btn.setForeground(new Color(209, 213, 219)); // Texto gris suave
+            btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER_COLOR, 1),
+                BorderFactory.createEmptyBorder(4, 11, 4, 11)
+            ));
+        }
+    }
+
     private JButton crearBoton(String texto, Color bg) {
         JButton btn = new JButton(texto);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -499,6 +590,7 @@ public class MainFrame extends JFrame {
         }
 
         public String getId() { return id; }
+        public String getName() { return name; }
 
         @Override
         public String toString() { return name; }

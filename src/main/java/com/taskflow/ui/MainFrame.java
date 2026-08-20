@@ -282,7 +282,10 @@ public class MainFrame extends JFrame {
         JPanel top = new JPanel(new BorderLayout());
         top.setOpaque(false);
 
-        JLabel idLabel = new JLabel("TSK-" + task.getId().toUpperCase());
+        User usuarioObj = taskManager.obtenerUsuarioPorId(task.getAssignedUserId());
+        String nombreAsignado = usuarioObj != null ? usuarioObj.getName() : "Sin Asignar";
+
+        JLabel idLabel = new JLabel("TSK-" + task.getId().toUpperCase() + " | " + nombreAsignado);
         idLabel.setFont(new Font("Consolas", Font.BOLD, 12));
         idLabel.setForeground(TEXT_MUTED);
 
@@ -349,7 +352,7 @@ public class MainFrame extends JFrame {
         });
         actions.add(comboEstado);
 
-        JButton btnEliminar = new JButton("✕");
+        JButton btnEliminar = new JButton("X");
         btnEliminar.setFont(new Font("Segoe UI", Font.BOLD, 11));
         btnEliminar.setBackground(BTN_RED);
         btnEliminar.setForeground(TEXT_WHITE);
@@ -493,11 +496,33 @@ public class MainFrame extends JFrame {
     // ==================== ACCIONES CON JOPTIONPANE ====================
 
     private void accionNuevoUsuario() {
-        String nombre = JOptionPane.showInputDialog(this, "Ingrese el nombre del nuevo usuario:", "Nuevo Usuario", JOptionPane.PLAIN_MESSAGE);
-        if (nombre != null && !nombre.trim().isEmpty()) {
-            taskManager.crearUsuario(nombre.trim());
-            actualizarTodo();
-            JOptionPane.showMessageDialog(this, "Usuario \"" + nombre.trim() + "\" creado exitosamente.");
+        JTextField txtNombre = new JTextField();
+        
+        List<com.taskflow.model.TypePerson> tipos = taskManager.getPersonDAO().obtenerTiposPersona();
+        JComboBox<com.taskflow.model.TypePerson> comboTipos = new JComboBox<>(tipos.toArray(new com.taskflow.model.TypePerson[0]));
+
+        List<com.taskflow.model.Team> equipos = taskManager.getPersonDAO().obtenerEquipos();
+        JComboBox<com.taskflow.model.Team> comboEquipos = new JComboBox<>(equipos.toArray(new com.taskflow.model.Team[0]));
+
+        JPanel form = new JPanel(new GridLayout(3, 2, 8, 8));
+        form.add(new JLabel("Nombre del Usuario:"));
+        form.add(txtNombre);
+        form.add(new JLabel("Rol (type_person):"));
+        form.add(comboTipos);
+        form.add(new JLabel("Equipo (team):"));
+        form.add(comboEquipos);
+
+        int result = JOptionPane.showConfirmDialog(this, form, "Nuevo Usuario", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result == JOptionPane.OK_OPTION) {
+            String nombre = txtNombre.getText().trim();
+            com.taskflow.model.TypePerson tipoSeleccionado = (com.taskflow.model.TypePerson) comboTipos.getSelectedItem();
+            com.taskflow.model.Team equipoSeleccionado = (com.taskflow.model.Team) comboEquipos.getSelectedItem();
+
+            if (!nombre.isEmpty() && tipoSeleccionado != null && equipoSeleccionado != null) {
+                taskManager.crearUsuario(nombre, tipoSeleccionado.getIdTypePerson(), equipoSeleccionado.getIdTeam());
+                actualizarTodo();
+                JOptionPane.showMessageDialog(this, "Usuario \"" + nombre + "\" creado con rol \"" + tipoSeleccionado.getName() + "\" en \"" + equipoSeleccionado.getName() + "\".");
+            }
         }
     }
 

@@ -9,13 +9,17 @@ import javax.swing.SwingUtilities;
  */
 public class Main {
     public static void main(String[] args) {
-        // Inicializar el gestor de tareas que carga los datos JSON
+        System.out.println("Iniciando TaskFlow y conectando a MySQL...");
+        
+        // Inicializar el gestor de tareas (conecta a MySQL y carga datos)
         TaskManager taskManager = new TaskManager();
 
         // Lanzar la ventana gráfica principal en el hilo de Swing
         SwingUtilities.invokeLater(() -> {
             MainFrame ventana = new MainFrame(taskManager);
             ventana.setVisible(true);
+            System.out.println("Aplicacion iniciada correctamente desde Main.");
         });
     }
 }
+

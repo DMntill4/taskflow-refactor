@@ -22,7 +22,6 @@ public class ConexionMySQL {
 
             // Crear las tablas automáticamente si no existen y vaciar datos de prueba
             crearTablasSiNoExisten(conexion);
-            vaciarDatosPrevios(conexion);
         } catch (ClassNotFoundException e) {
             System.out.println("Error: No se encontro el driver JDBC");
             e.printStackTrace();
@@ -70,23 +69,6 @@ public class ConexionMySQL {
 
         } catch (SQLException e) {
             System.err.println("Error al crear tablas en MySQL: " + e.getMessage());
-        }
-    }
-
-    private static boolean yaLimpio = false;
-
-    private static void vaciarDatosPrevios(Connection conn) {
-        if (yaLimpio) return;
-        try (Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate("SET FOREIGN_KEY_CHECKS = 0");
-            stmt.executeUpdate("TRUNCATE TABLE assement_task");
-            stmt.executeUpdate("TRUNCATE TABLE task");
-            stmt.executeUpdate("TRUNCATE TABLE team_person");
-            stmt.executeUpdate("TRUNCATE TABLE person");
-            stmt.executeUpdate("SET FOREIGN_KEY_CHECKS = 1");
-            yaLimpio = true;
-        } catch (SQLException e) {
-            System.err.println("Error al limpiar base de datos: " + e.getMessage());
         }
     }
 }

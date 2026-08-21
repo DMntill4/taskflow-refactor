@@ -21,6 +21,16 @@
 
 ---
 
+## Diagramas de Arquitectura de Base de Datos
+
+### 1. Modelo Físico de Tablas en MySQL
+![Modelo Físico de Tablas](assets/database_tables_schema.png)
+
+### 2. Modelo Relacional Lógico y Llaves
+![Modelo Relacional Lógico](assets/database_relational_schema.png)
+
+---
+
 ## Esquema de Base de Datos Relacional
 
 La base de datos `taskflowDb` está estructurada en las siguientes 7 tablas interconectadas:
